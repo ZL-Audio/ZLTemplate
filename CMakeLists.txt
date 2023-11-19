@@ -12,24 +12,28 @@ include (PamplejuceVersion)
 # Note: This cannot have spaces (it may be 2023, but you can't have it all!)
 # Worry not, JUCE's PRODUCT_NAME can have spaces (and is DAWs display)
 set(PROJECT_NAME "ZLSplit")
+set(PLUGIN_CODE "Spli")
 
 # Worry not, JUCE's PRODUCT_NAME can have spaces (and is what DAWs will display)
 # You can also just have it be the same thing as PROJECT_NAME
 # You may want to append the major version on the end of this (and PROJECT_NAME) ala:
-#   set(PROJECT_NAME "MyPlugin_v${MAJOR_VERSION}")
+# #  set(PROJECT_NAME "MyPlugin_v${MAJOR_VERSION}")
 # Doing so enables major versions to show up in IDEs and DAWs as separate plugins
 # allowing you to change parameters and behavior without breaking existing user projects
 set(PRODUCT_NAME "ZL Split")
 
 # Change me! Used for the MacOS bundle name and Installers
 set(COMPANY_NAME "ZL")
+set(PLUGIN_MANUFACTURER_CODE "Zliu")
 
 # Change me! Used for the MacOS bundle identifier (and signing)
 set(BUNDLE_ID "com.zlaudio.plugins")
 
+set(LV2URI "https://github.com/ZL-Audio/${PRODUCT_NAME}/tree/${VERSION}")
+
 # Change me! Set the plugin formats you want built
 # Valid choices: AAX Unity VST VST3 AU AUv3 Standalone
-set(FORMATS AU VST3)
+set(FORMATS AU VST3 LV2)
 
 # For simplicity, the name of the CMake project is also the name of the target
 project(${PROJECT_NAME} VERSION ${CURRENT_VERSION})
@@ -64,12 +68,12 @@ juce_add_plugin("${PROJECT_NAME}"
     # Change me!
     # A four-character plugin id
     # First character MUST be uppercase for AU formats
-    PLUGIN_MANUFACTURER_CODE Pamp
+    PLUGIN_MANUFACTURER_CODE "${PLUGIN_MANUFACTURER_CODE}"
 
     # Change me!
     # A unique four-character plugin id
     # Note: this must have at least one upper-case character
-    PLUGIN_CODE Spli
+    PLUGIN_CODE "${PLUGIN_CODE}"
     FORMATS "${FORMATS}"
 
     # The name of your final executable
@@ -117,7 +121,7 @@ target_compile_definitions(SharedCode
     VERSION="${CURRENT_VERSION}"
 
     # JucePlugin_Name is for some reason doesn't use the nicer PRODUCT_NAME
-    PRODUCT_NAME_WITHOUT_VERSION="Pamplejuce"
+    PRODUCT_NAME_WITHOUT_VERSION="${PRODUCT_NAME}"
 )
 
 # Link to any other modules you added (with juce_add_module) here!
