@@ -75,6 +75,7 @@ juce_add_plugin("${PROJECT_NAME}"
     # Note: this must have at least one upper-case character
     PLUGIN_CODE "${PLUGIN_CODE}"
     FORMATS "${FORMATS}"
+    LV2URI "${LV2URI}"
 
     # The name of your final executable
     # This is how it's listed in the DAW
