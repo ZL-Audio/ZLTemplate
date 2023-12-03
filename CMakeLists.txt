@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.24.1)
 # This tells cmake we have goodies in the /cmake folder
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake-includes")
 include(GitVersion)
-include (PamplejuceVersion)
+include(PamplejuceVersion)
 
 # Change me!
 # This is the internal name of the project and the name of JUCE's shared code "target"
