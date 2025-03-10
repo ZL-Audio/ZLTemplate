@@ -7,6 +7,9 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake-includes")
 include(GitVersion)
 include(PamplejuceVersion)
 
+# Configures universal binaries and decides which version of macOS to support
+include(PamplejuceMacOS)
+
 # Change me!
 # This is the internal name of the project and the name of JUCE's shared code "target"
 # Note: This cannot have spaces (it may be 2023, but you can't have it all!)
@@ -14,7 +17,6 @@ include(PamplejuceVersion)
 set(PROJECT_NAME "ZLTemplate")
 set(PLUGIN_CODE "Temp")
 
-# Change me!
 # Worry not, JUCE's PRODUCT_NAME can have spaces (and is what DAWs will display)
 # You can also just have it be the same thing as PROJECT_NAME
 # You may want to append the major version on the end of this (and PROJECT_NAME) ala:
@@ -41,8 +43,8 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     if (DEFINED ENV{PLUGIN_OS_FORMAT})
         set(FORMATS "$ENV{PLUGIN_OS_FORMAT}")
     else ()
-        set(FORMATS AU VST3 AAX)
-    endif()
+        set(FORMATS AU VST3 AAX Standalone)
+    endif ()
     if (DEFINED ENV{GITHUB_TOKEN})
         set(JUCE_AAX_COPY_DIR "/Users/runner/Library/Audio/Plug-Ins/AAX")
     else ()
@@ -53,21 +55,18 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
         set(FORMATS "$ENV{PLUGIN_OS_FORMAT}")
     else ()
         set(FORMATS LV2 VST3 AAX)
-    endif()
+    endif ()
     set(JUCE_AAX_COPY_DIR "C:/Program Files/Common Files/Avid/Audio/Plug-Ins")
 else ()
     if (DEFINED ENV{PLUGIN_OS_FORMAT})
         set(FORMATS "$ENV{PLUGIN_OS_FORMAT}")
-    else()
+    else ()
         set(FORMATS LV2 VST3)
     endif ()
 endif ()
 
-# include boost for this project
-# find_package(Boost 1.80.0 REQUIRED)
-
-# Configures universal binaries in CI
-include(PamplejuceMacOS)
+# Sanitizer support, comment out to disable
+include(Sanitizer)
 
 # Couple tweaks that IMO should be JUCE defaults
 include(JUCEDefaults)
@@ -106,8 +105,13 @@ juce_add_plugin("${PROJECT_NAME}"
         LV2URI "${LV2URI}"
 
         AU_MAIN_TYPE kAudioUnitType_Effect
-        VST3_CATEGORIES Fx
-        AAX_CATEGORY AAX_EPlugInCategory_Effect
+        VST3_CATEGORIES EQ
+        AAX_CATEGORY AAX_ePlugInCategory_EQ
+
+        MICROPHONE_PERMISSION_ENABLED TRUE
+        MICROPHONE_PERMISSION_TEXT "${PRODUCT_NAME} Standalone needs access to your audio interface"
+        HARDENED_RUNTIME_ENABLED TRUE
+        HARDENED_RUNTIME_OPTIONS com.apple.security.device.audio-input
 
         # The name of your final executable
         # This is how it's listed in the DAW
@@ -128,7 +132,7 @@ include(SharedCodeDefaults)
 # Just ensure you employ CONFIGURE_DEPENDS so the build system picks up changes
 # If you want to appease the CMake gods and avoid globs, manually add files like so:
 # set(SourceFiles Source/PluginEditor.h Source/PluginProcessor.h Source/PluginEditor.cpp Source/PluginProcessor.cpp)
-file(GLOB_RECURSE SourceFiles CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/source/*.h")
+file(GLOB_RECURSE SourceFiles CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/source/*.hpp")
 target_sources(SharedCode INTERFACE ${SourceFiles})
 
 # Adds a BinaryData target for embedding assets into the binary
@@ -150,12 +154,10 @@ target_compile_definitions(SharedCode
         CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
         VERSION="${CURRENT_VERSION}"
 
-        #        JUCE_DISPLAY_SPLASH_SCREEN=0
-
         # JucePlugin_Name is for some reason doesn't use the nicer PRODUCT_NAME
         PRODUCT_NAME_WITHOUT_VERSION="${PRODUCT_NAME}"
         #        JUCE_COREGRAPHICS_RENDER_WITH_MULTIPLE_PAINT_CALLS=1
-        JUCE_SILENCE_XCODE_15_LINKER_WARNING=1
+        JUCE_SILENCE_XCODE_15_LINKER_WARNING=1}
 )
 
 # Link to any other modules you added (with juce_add_module) here!
@@ -173,17 +175,16 @@ target_link_libraries(SharedCode
         juce_gui_extra
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
-        juce::juce_recommended_warning_flags)
-#        Boost::boost)
-
-# Link the JUCE plugin targets our SharedCode target
-target_link_libraries("${PROJECT_NAME}" PRIVATE SharedCode)
+        juce::juce_recommended_warning_flags
+)
 
 # IPP support, comment out to disable
 include(PamplejuceIPP)
 
 # A separate target keeps the Tests target fast!
 # include(Benchmarks)
+
+target_link_libraries("${PROJECT_NAME}" PRIVATE SharedCode)
 
 # Pass some config to GA (like our PRODUCT_NAME)
 include(GitHubENV)
