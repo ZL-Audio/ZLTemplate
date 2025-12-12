@@ -38,18 +38,6 @@ set(LV2URI "https://github.com/ZL-Audio/${PROJECT_NAME}")
 # For simplicity, the name of the CMake project is also the name of the target
 project(${PROJECT_NAME} VERSION ${CURRENT_VERSION})
 
-# Change me! Used for the MacOS bundle name and Installers
-set(COMPANY_NAME "ZL")
-set(PLUGIN_MANUFACTURER_CODE "Zliu")
-
-# Change me! Used for the MacOS bundle identifier (and signing)
-set(BUNDLE_ID "com.zlaudio.plugins")
-
-set(LV2URI "https://github.com/ZL-Audio/${PROJECT_NAME}")
-
-# For simplicity, the name of the CMake project is also the name of the target
-project(${PROJECT_NAME} VERSION ${CURRENT_VERSION})
-
 if (NOT DEFINED ZL_JUCE_COPY_PLUGIN)
     set (ZL_JUCE_COPY_PLUGIN TRUE)
 endif ()
